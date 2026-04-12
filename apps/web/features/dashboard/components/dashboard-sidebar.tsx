@@ -14,6 +14,7 @@ import {
   SparklesIcon,
 } from "lucide-react";
 
+import { cn } from "@workspace/ui/lib/utils";
 import { Skeleton } from "@workspace/ui/components/skeleton";
 import {
   Sidebar,
@@ -31,7 +32,7 @@ import {
 
 interface MenuItem {
   title: string;
-  url?: string;
+  url: string;
   icon: LucideIcon;
   onClick?: () => void;
 }
@@ -43,6 +44,13 @@ interface NavSectionProps {
 }
 
 function NavSection({ label, items, pathname }: NavSectionProps) {
+  const isActive = (url: string) => {
+    if (url === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(url);
+  };
+
   return (
     <SidebarGroup>
       {label && (
@@ -51,7 +59,7 @@ function NavSection({ label, items, pathname }: NavSectionProps) {
         </SidebarGroupLabel>
       )}
       <SidebarGroupContent>
-        <SidebarMenu>
+        <SidebarMenu className="gap-y-1">
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
@@ -65,7 +73,10 @@ function NavSection({ label, items, pathname }: NavSectionProps) {
                 }
                 onClick={item.onClick}
                 tooltip={item.title}
-                className="border border-transparent text-sm font-medium tracking-tight data-[active=true]:border-border data-[active=true]:shadow-[0px_1px_1px_0px_rgba(44,54,53,0.03),inset_0px_0px_0px_2px_white]"
+                className={cn(
+                  isActive(item.url) &&
+                    "bg-linear-to-b from-sidebar-primary to-[#0b63f3]! text-sidebar-primary-foreground! hover:to-[#0b63f3]/90!"
+                )}
               >
                 {item.url ? (
                   <Link href={item.url}>
@@ -132,12 +143,12 @@ export function DashboardSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex flex-col gap-4 pt-4">
-        <div className="flex items-center gap-2 pl-1 select-none">
+        <Link href={"/"} className="flex items-center gap-2 pl-1 select-none">
           <Image src="/logo.svg" alt="Audient" width={24} height={24} />
           <span className="overflow-hidden font-semibold tracking-tighter text-foreground group-data-[collapsible=icon]:hidden">
             Audient
           </span>
-        </div>
+        </Link>
         <SidebarMenu>
           <SidebarMenuItem>
             <OrganizationSwitcher
