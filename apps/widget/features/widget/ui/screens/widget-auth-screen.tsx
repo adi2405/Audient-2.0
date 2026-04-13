@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { useMutation } from "convex/react";
+import { useAtomValue, useSetAtom } from "jotai";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -8,6 +9,11 @@ import { api } from "@workspace/backend/_generated/api";
 import { Button } from "@workspace/ui/components/button";
 import { WidgetHeader } from "../components/widget-header";
 import { Doc } from "@workspace/backend/_generated/dataModel";
+import {
+  contactSessionIdAtomFamily,
+  organizationIdAtom,
+  screenAtom,
+} from "../../atoms/widget-atoms";
 import {
   Field,
   FieldError,
@@ -20,9 +26,14 @@ const formSchema = z.object({
   email: z.email("Invalid email address."),
 });
 
-const organizationId = "Aditya's Organization";
-
 export function WidgetAuthScreen() {
+  const setScreen = useSetAtom(screenAtom);
+
+  const organizationId = useAtomValue(organizationIdAtom);
+  const setContactSessionId = useSetAtom(
+    contactSessionIdAtomFamily(organizationId || "")
+  );
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,7 +70,8 @@ export function WidgetAuthScreen() {
       metadata,
     });
 
-    console.log(contactSessionId);
+    setContactSessionId(contactSessionId);
+    setScreen("selection");
   };
 
   return (
