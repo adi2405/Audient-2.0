@@ -8,13 +8,19 @@
  * @module
  */
 
+import type * as constants from "../constants.js";
+import type * as public_contactSessions from "../public/contactSessions.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  constants: typeof constants;
+  "public/contactSessions": typeof public_contactSessions;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.

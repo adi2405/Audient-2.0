@@ -170,6 +170,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    letter-spacing: var(--tracking-normal);
+    font-weight: 500;
   }
   @layer base {
     button:not(:disabled),
