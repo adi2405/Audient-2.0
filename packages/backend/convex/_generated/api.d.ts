@@ -10,6 +10,7 @@
 
 import type * as constants from "../constants.js";
 import type * as public_contactSessions from "../public/contactSessions.js";
+import type * as public_organizations from "../public/organizations.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   constants: typeof constants;
   "public/contactSessions": typeof public_contactSessions;
+  "public/organizations": typeof public_organizations;
 }>;
 
 /**
