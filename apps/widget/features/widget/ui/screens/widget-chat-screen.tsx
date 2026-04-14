@@ -14,7 +14,10 @@ import { api } from "@workspace/backend/_generated/api";
 import { Button } from "@workspace/ui/components/button";
 import { WidgetHeader } from "../components/widget-header";
 import { AIResponse } from "@workspace/ui/components/ai/response";
+import { useInfiniteScroll } from "@workspace/ui/hooks/use-infinite-scroll";
 import { Field, FieldError, FieldGroup } from "@workspace/ui/components/field";
+import { DicebearAvatar } from "@workspace/ui/components/custom/dicebear-avatar";
+import { InfiniteScrollTrigger } from "@workspace/ui/components/custom/infinite-scroll-trigger";
 import {
   AIMessage,
   AIMessageContent,
@@ -102,12 +105,12 @@ export function WidgetChatScreen() {
     { initialNumItems: 10 }
   );
 
-  // const { topElementRef, handleLoadMore, canLoadMore, isLoadingMore } =
-  //   useInfiniteScroll({
-  //     status: messages.status,
-  //     loadMore: messages.loadMore,
-  //     loadSize: 10,
-  //   });
+  const { topElementRef, handleLoadMore, canLoadMore, isLoadingMore } =
+    useInfiniteScroll({
+      status: messages.status,
+      loadMore: messages.loadMore,
+      loadSize: 10,
+    });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -147,6 +150,12 @@ export function WidgetChatScreen() {
       </WidgetHeader>
       <AIConversation>
         <AIConversationContent>
+          <InfiniteScrollTrigger
+            canLoadMore={canLoadMore}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={handleLoadMore}
+            ref={topElementRef}
+          />
           {toUIMessages(messages.results ?? [])?.map((message) => {
             return (
               <AIMessage
@@ -157,13 +166,13 @@ export function WidgetChatScreen() {
                 <AIMessageContent>
                   <AIResponse>{getMessageContent(message)}</AIResponse>
                 </AIMessageContent>
-                {/* {message.role === "assistant" && (
+                {message.role === "assistant" && (
                   <DicebearAvatar
                     imageUrl="/logo.svg"
                     seed="assistant"
                     size={32}
                   />
-                )} */}
+                )}
               </AIMessage>
             );
           })}
@@ -193,53 +202,51 @@ export function WidgetChatScreen() {
           })}
         </AISuggestions>
       )}
-      <form>
-        <AIInput
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="rounded-none border-x-0 border-b-0"
-        >
-          <FieldGroup>
-            <Controller
-              name="message"
-              control={form.control}
-              disabled={conversation?.status === "resolved"}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <AIInputTextarea
-                    value={field.value}
-                    disabled={conversation?.status === "resolved"}
-                    onChange={field.onChange}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        form.handleSubmit(onSubmit)();
-                      }
-                    }}
-                    placeholder={
-                      conversation?.status === "resolved"
-                        ? "This conversation has been resolved."
-                        : "Type your message..."
+      <AIInput
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="rounded-none border-x-0 border-b-0"
+      >
+        <FieldGroup>
+          <Controller
+            name="message"
+            control={form.control}
+            disabled={conversation?.status === "resolved"}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <AIInputTextarea
+                  value={field.value}
+                  disabled={conversation?.status === "resolved"}
+                  onChange={field.onChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      form.handleSubmit(onSubmit)();
                     }
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </FieldGroup>
-          <AIInputToolbar>
-            <AIInputTools />
-            <AIInputSubmit
-              disabled={
-                conversation?.status === "resolved" || !form.formState.isValid
-              }
-              status="ready"
-              type="submit"
-            />
-          </AIInputToolbar>
-        </AIInput>
-      </form>
+                  }}
+                  placeholder={
+                    conversation?.status === "resolved"
+                      ? "This conversation has been resolved."
+                      : "Type your message..."
+                  }
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        </FieldGroup>
+        <AIInputToolbar>
+          <AIInputTools />
+          <AIInputSubmit
+            disabled={
+              conversation?.status === "resolved" || !form.formState.isValid
+            }
+            status="ready"
+            type="submit"
+          />
+        </AIInputToolbar>
+      </AIInput>
     </>
   );
 }
