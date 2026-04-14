@@ -7,6 +7,7 @@ import { WidgetAuthScreen } from "../screens/widget-auth-screen";
 import { WidgetChatScreen } from "../screens/widget-chat-screen";
 import { WidgetErrorScreen } from "../screens/widget-error-screen";
 import { WidgetLoadingScreen } from "../screens/widget-loading-screen";
+import { WidgetInboxScreen } from "../screens/widget-inbox-screen";
 import { WidgetSelectionScreen } from "../screens/widget-selection-screen";
 
 interface Props {
@@ -21,7 +22,7 @@ export function WidgetView({ organizationId }: Props) {
     chat: <WidgetChatScreen />,
     contact: <p>Contact</p>,
     error: <WidgetErrorScreen />,
-    inbox: <p>Inbox</p>,
+    inbox: <WidgetInboxScreen />,
     loading: <WidgetLoadingScreen organizationId={organizationId} />,
     selection: <WidgetSelectionScreen />,
     voice: <p>Voice</p>,
