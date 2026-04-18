@@ -2,12 +2,12 @@ import { ConvexError, v } from "convex/values";
 import { saveMessage } from "@convex-dev/agent";
 import { paginationOptsValidator } from "convex/server";
 
-// import { search } from "../system/ai/tools/search";
+import { search } from "../system/ai/tools/search";
 import { action, query } from "../_generated/server";
 import { components, internal } from "../_generated/api";
 import { supportAgent } from "../system/ai/agents/supportAgent";
-// import { resolveConversation } from "../system/ai/tools/resolveConversation";
-// import { escalateConversation } from "../system/ai/tools/escalateConversation";
+import { resolveConversation } from "../system/ai/tools/resolveConversation";
+import { escalateConversation } from "../system/ai/tools/escalateConversation";
 
 export const create = action({
   args: {
@@ -56,35 +56,35 @@ export const create = action({
       contactSessionId: args.contactSessionId,
     });
 
-    // const subscription = await ctx.runQuery(
-    //   internal.system.subscriptions.getByOrganizationId,
-    //   {
-    //     organizationId: conversation.organizationId,
-    //   }
-    // );
+    const subscription = await ctx.runQuery(
+      internal.system.subscriptions.getByOrganizationId,
+      {
+        organizationId: conversation.organizationId,
+      }
+    );
 
-    // const shouldTriggerAgent =
-    //   conversation.status === "unresolved" && subscription?.status === "active";
+    const shouldTriggerAgent =
+      conversation.status === "unresolved" && subscription?.status === "active";
 
-    // if (shouldTriggerAgent) {
-    //   await supportAgent.generateText(
-    //     ctx,
-    //     { threadId: args.threadId },
-    //     {
-    //       prompt: args.prompt,
-    //       tools: {
-    //         escalateConversationTool: escalateConversation,
-    //         resolveConversationTool: resolveConversation,
-    //         searchTool: search,
-    //       },
-    //     }
-    //   );
-    // } else {
-    //   await saveMessage(ctx, components.agent, {
-    //     threadId: args.threadId,
-    //     prompt: args.prompt,
-    //   });
-    // }
+    if (shouldTriggerAgent) {
+      await supportAgent.generateText(
+        ctx,
+        { threadId: args.threadId },
+        {
+          prompt: args.prompt,
+          tools: {
+            escalateConversationTool: escalateConversation,
+            resolveConversationTool: resolveConversation,
+            searchTool: search,
+          },
+        }
+      );
+    } else {
+      await saveMessage(ctx, components.agent, {
+        threadId: args.threadId,
+        prompt: args.prompt,
+      });
+    }
   },
 });
 

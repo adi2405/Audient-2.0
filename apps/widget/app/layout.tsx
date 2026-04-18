@@ -21,7 +21,9 @@ export default function RootLayout({
       className={cn("antialiased", "font-sans", poppins.className)}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <div className="h-screen w-screen">{children}</div>
+        </ThemeProvider>
       </body>
     </html>
   );

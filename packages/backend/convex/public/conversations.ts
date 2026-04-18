@@ -6,6 +6,14 @@ import { paginationOptsValidator } from "convex/server";
 import { components, internal } from "../_generated/api";
 import { supportAgent } from "../system/ai/agents/supportAgent";
 
+function getMessageText(message: MessageDoc | null | undefined) {
+  return message?.text?.trim() ?? "";
+}
+
+function getLastVisibleMessage(messages: MessageDoc[]) {
+  return messages.find((message) => getMessageText(message).length > 0) ?? null;
+}
+
 export const create = mutation({
   args: {
     organizationId: v.string(),
@@ -83,16 +91,12 @@ export const getMany = query({
 
     const conversationsWithLastMessage = await Promise.all(
       conversations.page.map(async (conversation) => {
-        let lastMessage: MessageDoc | null = null;
-
         const messages = await supportAgent.listMessages(ctx, {
           threadId: conversation.threadId,
-          paginationOpts: { numItems: 1, cursor: null },
+          paginationOpts: { numItems: 10, cursor: null },
         });
 
-        if (messages.page.length > 0) {
-          lastMessage = messages.page[0] ?? null;
-        }
+        const lastMessage = getLastVisibleMessage(messages.page);
 
         return {
           _id: conversation._id,

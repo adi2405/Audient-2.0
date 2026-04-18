@@ -1,0 +1,135 @@
+import { generateText } from "ai";
+import { google } from "@ai-sdk/google";
+import { ConvexError, v } from "convex/values";
+import { saveMessage } from "@convex-dev/agent";
+import { paginationOptsValidator } from "convex/server";
+
+import { requireOrgIdentity } from "../lib/requireOrg";
+import { components, internal } from "../_generated/api";
+import { action, mutation, query } from "../_generated/server";
+import { supportAgent } from "../system/ai/agents/supportAgent";
+import { OPERATOR_MESSAGE_ENHANCEMENT_PROMPT } from "../system/ai/constants";
+
+export const enhanceResponse = action({
+  args: {
+    prompt: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { orgId } = await requireOrgIdentity(ctx);
+
+    const subscription = await ctx.runQuery(
+      internal.system.subscriptions.getByOrganizationId,
+      {
+        organizationId: orgId,
+      }
+    );
+
+    if (subscription?.status !== "active") {
+      throw new ConvexError({
+        code: "BAD_REQUEST",
+        message: "Not subscribed",
+      });
+    }
+
+    const response = await generateText({
+      model: google("gemini-2.5-flash-lite"),
+      messages: [
+        {
+          role: "system",
+          content: OPERATOR_MESSAGE_ENHANCEMENT_PROMPT,
+        },
+        {
+          role: "user",
+          content: args.prompt,
+        },
+      ],
+    });
+
+    return response.text;
+  },
+});
+
+export const create = mutation({
+  args: {
+    prompt: v.string(),
+    conversationId: v.id("conversations"),
+  },
+  handler: async (ctx, args) => {
+    const { identity, orgId } = await requireOrgIdentity(ctx);
+
+    const conversation = await ctx.db.get(args.conversationId);
+
+    if (!conversation) {
+      throw new ConvexError({
+        code: "NOT_FOUND",
+        message: "Conversation not found",
+      });
+    }
+
+    if (conversation.organizationId !== orgId) {
+      throw new ConvexError({
+        code: "UNAUTHORIZED",
+        message: "Invalid Organization ID",
+      });
+    }
+
+    if (conversation.status === "resolved") {
+      throw new ConvexError({
+        code: "BAD_REQUEST",
+        message: "Conversation resolved",
+      });
+    }
+
+    if (conversation.status === "unresolved") {
+      await ctx.db.patch(args.conversationId, {
+        status: "escalated",
+      });
+    }
+
+    await saveMessage(ctx, components.agent, {
+      threadId: conversation.threadId,
+      // TODO: Check is "agentName is needed or not"
+      agentName: identity.familyName,
+      message: {
+        role: "assistant",
+        content: args.prompt,
+      },
+    });
+  },
+});
+
+export const getMany = query({
+  args: {
+    threadId: v.string(),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const { orgId } = await requireOrgIdentity(ctx);
+
+    const conversation = await ctx.db
+      .query("conversations")
+      .withIndex("by_thread_id", (q) => q.eq("threadId", args.threadId))
+      .unique();
+
+    if (!conversation) {
+      throw new ConvexError({
+        code: "NOT_FOUND",
+        message: "Conversation not found",
+      });
+    }
+
+    if (conversation.organizationId !== orgId) {
+      throw new ConvexError({
+        code: "UNAUTHORIZED",
+        message: "Invalid Organization ID",
+      });
+    }
+
+    const paginated = await supportAgent.listMessages(ctx, {
+      threadId: args.threadId,
+      paginationOpts: args.paginationOpts,
+    });
+
+    return paginated;
+  },
+});

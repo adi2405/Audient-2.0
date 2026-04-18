@@ -47,15 +47,33 @@ export const DicebearAvatar = ({
         height: size,
       }}
     >
-      <Avatar
-        className={cn("border", className)}
-        style={{
-          width: size,
-          height: size,
-        }}
-      >
-        <AvatarImage src={avatarSrc} alt="Avatar" />
-      </Avatar>
+      {imageUrl ? (
+        <div
+          className={cn(className)}
+          style={{
+            width: size,
+            height: size,
+          }}
+        >
+          <img
+            src={avatarSrc}
+            alt="Avatar"
+            width={size}
+            height={size}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      ) : (
+        <Avatar
+          className={cn("border", className)}
+          style={{
+            width: size,
+            height: size,
+          }}
+        >
+          <AvatarImage src={avatarSrc} alt="Avatar" />
+        </Avatar>
+      )}
       {badgeImageUrl && (
         <div
           className={cn(

@@ -134,39 +134,39 @@ export function WidgetLoadingScreen({
   }, [step, setStep, widgetSettings, setWidgetSettings, setLoadingMessage]);
 
   // Step 4: Load Vapi secrets
-  // const getVapiSecrets = useAction(api.public.secrets.getVapiSecrets);
+  const getVapiSecrets = useAction(api.public.secrets.getVapiSecrets);
 
-  // useEffect(() => {
-  //   if (step !== "vapi") {
-  //     return;
-  //   }
+  useEffect(() => {
+    if (step !== "vapi") {
+      return;
+    }
 
-  //   if (!organizationId) {
-  //     setErrorMessage("Organization ID is required");
-  //     setScreen("error");
-  //     return;
-  //   }
+    if (!organizationId) {
+      setErrorMessage("Organization ID is required");
+      setScreen("error");
+      return;
+    }
 
-  //   setLoadingMessage("Loading voice features...");
-  //   getVapiSecrets({ organizationId })
-  //     .then((secrets) => {
-  //       setVapiSecrets(secrets);
-  //       setStep("done");
-  //     })
-  //     .catch(() => {
-  //       setVapiSecrets(null);
-  //       setStep("done");
-  //     });
-  // }, [
-  //   step,
-  //   setStep,
-  //   organizationId,
-  //   setErrorMessage,
-  //   setScreen,
-  //   getVapiSecrets,
-  //   setVapiSecrets,
-  //   setLoadingMessage,
-  // ]);
+    setLoadingMessage("Loading voice features...");
+    getVapiSecrets({ organizationId })
+      .then((secrets) => {
+        setVapiSecrets(secrets);
+        setStep("done");
+      })
+      .catch(() => {
+        setVapiSecrets(null);
+        setStep("done");
+      });
+  }, [
+    step,
+    setStep,
+    organizationId,
+    setErrorMessage,
+    setScreen,
+    getVapiSecrets,
+    setVapiSecrets,
+    setLoadingMessage,
+  ]);
 
   useEffect(() => {
     if (step !== "done") {
