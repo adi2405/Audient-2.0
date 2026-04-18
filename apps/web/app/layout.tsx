@@ -34,7 +34,7 @@ export default function RootLayout({
       <head>
         <script
           src="https://audient-customer-support-widget.vercel.app/widget.js"
-          data-organization-id="org_3CWYEsdKsIKe62FRE8lZOqZ2glO"
+          data-organization-id="org_3CWaFkqqivZOy7aT9Q7viNqfHbK"
         ></script>
       </head>
       <body>
