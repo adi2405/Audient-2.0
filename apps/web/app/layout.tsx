@@ -31,6 +31,12 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", "font-sans", poppins.className)}
     >
+      <head>
+        <script
+          src="https://audient-customer-support-widget.vercel.app/widget.js"
+          data-organization-id="org_3CWYEsdKsIKe62FRE8lZOqZ2glO"
+        ></script>
+      </head>
       <body>
         <ClerkProvider
           appearance={{
