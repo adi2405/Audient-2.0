@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select";
 
-export const ConversationsPanel = () => {
+export function ConversationsPanel() {
   const pathName = usePathname();
 
   const statusFilter = useAtomValue(statusFilterAtom);
@@ -182,9 +182,9 @@ export const ConversationsPanel = () => {
       )}
     </div>
   );
-};
+}
 
-export const SkeletonConversations = () => {
+export function SkeletonConversations() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto">
       <div className="relative flex w-full min-w-0 flex-col p-2">
@@ -207,4 +207,4 @@ export const SkeletonConversations = () => {
       </div>
     </div>
   );
-};
+}

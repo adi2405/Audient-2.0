@@ -4,7 +4,16 @@ import { paginationOptsValidator, PaginationResult } from "convex/server";
 
 import { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
+import { requireOrgIdentity } from "../lib/requireOrg";
 import { supportAgent } from "../system/ai/agents/supportAgent";
+
+function getMessageText(message: MessageDoc | null | undefined) {
+  return message?.text?.trim() ?? "";
+}
+
+function getLastVisibleMessage(messages: MessageDoc[]) {
+  return messages.find((message) => getMessageText(message).length > 0) ?? null;
+}
 
 export const getMany = query({
   args: {
@@ -18,23 +27,7 @@ export const getMany = query({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity === null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { orgId } = await requireOrgIdentity(ctx);
 
     let conversations: PaginationResult<Doc<"conversations">>;
 
@@ -58,8 +51,6 @@ export const getMany = query({
 
     const conversationsWithAdditionalData = await Promise.all(
       conversations.page.map(async (conversation) => {
-        let lastMessage: MessageDoc | null = null;
-
         const contactSession = await ctx.db.get(conversation.contactSessionId);
 
         if (!contactSession) {
@@ -68,12 +59,10 @@ export const getMany = query({
 
         const messages = await supportAgent.listMessages(ctx, {
           threadId: conversation.threadId,
-          paginationOpts: { numItems: 1, cursor: null },
+          paginationOpts: { numItems: 10, cursor: null },
         });
 
-        if (messages.page.length > 0) {
-          lastMessage = messages.page[0] ?? null;
-        }
+        const lastMessage = getLastVisibleMessage(messages.page);
 
         return {
           ...conversation,
@@ -99,23 +88,7 @@ export const getOne = query({
     conversationId: v.id("conversations"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity === null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { orgId } = await requireOrgIdentity(ctx);
 
     const conversation = await ctx.db.get(args.conversationId);
 
@@ -159,23 +132,7 @@ export const updateStatus = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity === null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { orgId } = await requireOrgIdentity(ctx);
 
     const conversation = await ctx.db.get(args.conversationId);
 

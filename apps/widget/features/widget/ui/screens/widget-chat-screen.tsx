@@ -105,6 +105,15 @@ export function WidgetChatScreen() {
     { initialNumItems: 10 }
   );
 
+  const uiMessages = useMemo(() => {
+    return toUIMessages(messages.results ?? [])
+      .map((message) => ({
+        ...message,
+        textContent: getMessageContent(message),
+      }))
+      .filter((message) => message.textContent.length > 0);
+  }, [messages.results]);
+
   const { topElementRef, handleLoadMore, canLoadMore, isLoadingMore } =
     useInfiniteScroll({
       status: messages.status,
@@ -156,7 +165,7 @@ export function WidgetChatScreen() {
             onLoadMore={handleLoadMore}
             ref={topElementRef}
           />
-          {toUIMessages(messages.results ?? [])?.map((message) => {
+          {uiMessages.map((message) => {
             return (
               <AIMessage
                 key={message.id}
@@ -178,7 +187,7 @@ export function WidgetChatScreen() {
           })}
         </AIConversationContent>
       </AIConversation>
-      {toUIMessages(messages.results ?? [])?.length === 1 && (
+      {uiMessages.length === 1 && (
         <AISuggestions className="flex w-full flex-col items-end p-2">
           {suggestions.map((suggestion) => {
             if (!suggestion) {
@@ -214,6 +223,7 @@ export function WidgetChatScreen() {
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <AIInputTextarea
+                  aria-invalid={fieldState.invalid}
                   value={field.value}
                   disabled={conversation?.status === "resolved"}
                   onChange={field.onChange}

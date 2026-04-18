@@ -54,7 +54,7 @@ function NavSection({ label, items, pathname }: NavSectionProps) {
   return (
     <SidebarGroup>
       {label && (
-        <SidebarGroupLabel className="overflow-hidden text-sm whitespace-nowrap text-muted-foreground uppercase">
+        <SidebarGroupLabel className="overflow-hidden text-xs whitespace-nowrap text-muted-foreground">
           {label}
         </SidebarGroupLabel>
       )}

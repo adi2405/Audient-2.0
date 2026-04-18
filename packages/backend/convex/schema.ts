@@ -1,5 +1,5 @@
-import { v } from "convex/values"
-import { defineSchema, defineTable } from "convex/server"
+import { v } from "convex/values";
+import { defineSchema, defineTable } from "convex/server";
 
 export default defineSchema({
   contactSessions: defineTable({
@@ -68,4 +68,4 @@ export default defineSchema({
       phoneNumber: v.optional(v.string()),
     }),
   }).index("by_organization_id", ["organizationId"]),
-})
+});

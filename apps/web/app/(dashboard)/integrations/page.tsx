@@ -1,5 +1,5 @@
+import { IntegrationsViews } from "@/features/integrations/views/integrations-view";
+
 export default function Page() {
-  return (
-    <div>Integrations</div>
-  );
+  return <IntegrationsViews />;
 }
